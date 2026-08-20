@@ -156,3 +156,24 @@ export function EffortDots({ level, className }: { level: number; className?: st
     </span>
   );
 }
+
+const TIER_META: Record<number, { label: string; cls: string }> = {
+  0: { label: "Tier 0 · Starter", cls: "bg-neutral-800 text-neutral-300" },
+  1: { label: "Tier 1 · Verified", cls: "border border-accent text-accent-300 bg-transparent" },
+  2: { label: "Tier 2 · ID Verified", cls: "bg-accent-800 text-accent-100" },
+};
+
+/** S0: tier badge weight increases with trust. */
+export function TierBadge({ tier }: { tier: number }) {
+  const meta = TIER_META[tier] ?? TIER_META[0];
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10.5px] font-semibold", meta.cls)}>
+      {tier >= 2 && (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <path d="M5 12.5 10 17.5 19 7" />
+        </svg>
+      )}
+      {meta.label}
+    </span>
+  );
+}

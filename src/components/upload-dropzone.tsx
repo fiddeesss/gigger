@@ -20,6 +20,7 @@ export function UploadDropzone({
   files,
   onChange,
   disabled,
+  bucket = "proofs",
 }: {
   accept: string;
   maxSizeMB: number;
@@ -30,6 +31,7 @@ export function UploadDropzone({
   files: UploadedFile[];
   onChange: (files: UploadedFile[]) => void;
   disabled?: boolean;
+  bucket?: "proofs" | "ids";
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -56,7 +58,7 @@ export function UploadDropzone({
         }
         const path = `${uid}/${crypto.randomUUID()}/${file.name.replace(/[^\w.\-]+/g, "_")}`;
         const { error: upErr } = await supabase.storage
-          .from("proofs")
+          .from(bucket)
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (upErr) {
           setError(`Upload failed for ${file.name} — check your connection and retry.`);
@@ -71,7 +73,7 @@ export function UploadDropzone({
       setBusy(false);
       if (ok.length) onChange([...files, ...ok]);
     },
-    [files, kind, maxSizeMB, onChange],
+    [files, kind, maxSizeMB, onChange, bucket],
   );
 
   function remove(path: string) {
