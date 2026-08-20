@@ -33,6 +33,8 @@ export interface Quest {
   reward_points: number;
   proof_type: ProofType;
   instructions: string[];
+  options: string[]; // poll choices (proof_type='poll')
+  questions: { q: string; type: "single" | "text"; options?: string[] }[]; // survey (proof_type='survey')
   effort_minutes: number;
   effort_dots: number;
   min_tier: number;

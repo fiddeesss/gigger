@@ -19,6 +19,8 @@ function q(overrides: Partial<Quest>): Quest {
     reward_points: 100,
     proof_type: "survey",
     instructions: [],
+    options: [],
+    questions: [],
     effort_minutes: 10,
     effort_dots: 1,
     min_tier: 0,

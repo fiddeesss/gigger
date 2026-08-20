@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SubmitForm } from "@/components/submit-form";
+import { canAttempt } from "@/lib/quests";
+import { effectiveTier } from "@/lib/state";
 
-// Phase 3 replaces this stub with the real submission flow (uploads, pre-checks,
-// draft persistence, review confirmation timeline).
-export default async function SubmitStubPage({
+export const dynamic = "force-dynamic";
+
+export default async function SubmitPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -18,11 +21,21 @@ export default async function SubmitStubPage({
 
   const { data: quest } = await supabase
     .from("quests")
-    .select("id, title, reward_points, proof_type")
+    .select("*")
     .eq("slug", slug)
+    .eq("status", "live")
     .single();
 
   if (!quest) redirect("/quests");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  const attempt = canAttempt(quest, profile ?? { tier: 0 });
+  if (!attempt.ok) redirect(`/quests/${slug}`);
 
   const { data: existing } = await supabase
     .from("submissions")
@@ -30,21 +43,17 @@ export default async function SubmitStubPage({
     .eq("quest_id", quest.id)
     .eq("user_id", user.id)
     .maybeSingle();
-
   if (existing) redirect(`/quests/${slug}`);
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-4">
-      <Link href={`/quests/${slug}`} className="text-[13px] text-neutral-500">
-        ← Back to quest
-      </Link>
-      <div className="flex flex-col gap-3 rounded-xl bg-surface p-4 shadow-sm">
-        <h1 className="text-[18px] font-semibold">{quest.title}</h1>
-        <p className="text-[13px] text-neutral-500">
-          The submission flow is the next build step (proof uploads, pre-checks,
-          review timeline). Check back shortly — or follow the repo.
-        </p>
+    <div className="flex flex-col pb-6">
+      <div className="px-4 pt-4">
+        <Link href={`/quests/${slug}`} className="text-[13px] text-neutral-500">
+          ← Back to quest
+        </Link>
+        <h1 className="mt-2 text-[18px] font-semibold leading-snug">{quest.title}</h1>
       </div>
+      <SubmitForm quest={quest} userId={user.id} />
     </div>
   );
 }
