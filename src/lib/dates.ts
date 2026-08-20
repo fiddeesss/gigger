@@ -37,3 +37,29 @@ export function formatDeadline(ms: number, nowMs: number = Date.now()): string {
   const mm = String(minutes).padStart(2, "0");
   return `by ${when} ${h12}:${mm} ${ampm}`;
 }
+
+export function timeAgo(iso: string, nowMs: number = Date.now()): string {
+  const diff = nowMs - Date.parse(iso);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+/** SLA state for the review promise: "due in Xh" / "overdue by Xh". */
+export function slaLabel(createdAtIso: string, slaHours: number, nowMs: number = Date.now()): {
+  label: string;
+  overdue: boolean;
+} {
+  const dueAt = Date.parse(createdAtIso) + slaHours * 3600 * 1000;
+  const diff = dueAt - nowMs;
+  if (diff <= 0) {
+    const h = Math.ceil(-diff / 3600 / 1000);
+    return { label: `overdue ${h}h`, overdue: true };
+  }
+  const h = Math.ceil(diff / 3600 / 1000);
+  return { label: `due in ${h}h`, overdue: false };
+}

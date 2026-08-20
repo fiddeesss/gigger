@@ -46,9 +46,17 @@ const LABEL_CATEGORIES = [
 const VIDEO_ACCEPT = "video/mp4,video/webm,video/quicktime";
 const PHOTO_ACCEPT = "image/jpeg,image/png,image/webp";
 
-export function SubmitForm({ quest, userId }: { quest: Quest; userId: string }) {
+export function SubmitForm({
+  quest,
+  userId,
+  submissionId,
+}: {
+  quest: Quest;
+  userId: string;
+  submissionId?: string;
+}) {
   const router = useRouter();
-  const draftKey = `pq-draft-${quest.slug}`;
+  const draftKey = `pq-draft-${quest.slug}-${submissionId ?? "new"}`;
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [loaded, setLoaded] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
@@ -150,11 +158,17 @@ export function SubmitForm({ quest, userId }: { quest: Quest; userId: string }) 
     setSubmitting(true);
     setSubmitError(null);
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("submit_quest", {
-      p_quest_id: quest.id,
-      p_user_id: userId,
-      p_payload: payload,
-    });
+    const { data, error } = submissionId
+      ? await supabase.rpc("resubmit_submission", {
+          p_submission_id: submissionId,
+          p_user_id: userId,
+          p_payload: payload,
+        })
+      : await supabase.rpc("submit_quest", {
+          p_quest_id: quest.id,
+          p_user_id: userId,
+          p_payload: payload,
+        });
     if (error) {
       setSubmitError("Couldn't submit — check your connection and try again.");
       setSubmitting(false);
@@ -170,14 +184,20 @@ export function SubmitForm({ quest, userId }: { quest: Quest; userId: string }) 
             ? "This quest needs a higher tier."
             : res.reason === "already-submitted"
               ? "You already submitted this quest."
-              : "Couldn't submit right now. Try again.",
+              : res.reason === "not-rejected"
+                ? "This submission can't be resubmitted."
+                : "Couldn't submit right now. Try again.",
       );
       setSubmitting(false);
       busyRef.current = false;
       return;
     }
     localStorage.removeItem(draftKey);
-    router.push(`/quests/${quest.slug}/submitted?sid=${res.submission_id}`);
+    if (submissionId) {
+      router.push(`/work/${submissionId}?resubmitted=1`);
+    } else {
+      router.push(`/quests/${quest.slug}/submitted?sid=${res.submission_id}`);
+    }
     router.refresh();
   }
 
