@@ -20,12 +20,19 @@ const STEPS = [
   },
 ];
 
-export default async function LandingPage() {
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ref?: string }>;
+}) {
+  const { ref } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) redirect("/quests");
+
+  const loginHref = ref ? `/login?ref=${encodeURIComponent(ref)}` : "/login";
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[420px] flex-col px-6 py-10">
@@ -63,7 +70,7 @@ export default async function LandingPage() {
       </div>
 
       <a
-        href="/login"
+        href={loginHref}
         className="mt-8 grid min-h-[48px] place-items-center rounded-lg bg-section px-5 text-[15px] font-medium text-white transition-colors hover:bg-section-glow"
       >
         Start with my email
