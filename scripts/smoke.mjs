@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const phase = process.argv[2] ?? "all";
-const phases = ["phase5_smoke.mjs", "phase6_smoke.mjs", "phase7_smoke.mjs"];
+const phases = ["phase5_smoke.mjs", "phase6_smoke.mjs", "phase7_smoke.mjs", "phase8_smoke.mjs"];
 
 const targets = phase === "all" ? phases : phases.filter((p) => p.includes(phase));
 
