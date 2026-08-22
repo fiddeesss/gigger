@@ -9,6 +9,7 @@ try {
     const m = line.match(/^([A-Z_]+)=(.*)$/);
     if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
   }
+  process.env.SUPABASE_ANON_KEY ??= process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 } catch {}
 
 const API = "https://aiumavddbmoucvdgtows.supabase.co";
