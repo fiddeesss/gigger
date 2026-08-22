@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/ui";
+import { ShareButton } from "@/components/share-button";
 import { fmtPts, fmtPeso } from "@/lib/constants";
 import { normalizePhNumber } from "@/lib/redemptions";
 import { timeAgo } from "@/lib/dates";
@@ -54,16 +55,9 @@ export default async function ReceiptPage({
           Keep this reference number — it&apos;s your record for support and
           payout disputes.
         </div>
-        <button
-          onClick={() => {
-            if (navigator.share) {
-              navigator.share({ title: "PisoQuest receipt", text: `${r.reference_no} · ${fmtPts(r.points)} (${fmtPeso(r.peso)}) via ${r.method.toUpperCase()}` });
-            }
-          }}
-          className="grid min-h-[44px] w-full place-items-center rounded-lg bg-section text-[14px] font-medium text-white transition-colors hover:bg-section-glow"
-        >
-          Share this receipt
-        </button>
+        <ShareButton
+          text={`${r.reference_no} · ${fmtPts(r.points)} (${fmtPeso(r.peso)}) via ${r.method.toUpperCase()}`}
+        />
       </div>
 
       {r.status === "on_hold" && (
