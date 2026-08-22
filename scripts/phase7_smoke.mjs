@@ -1,4 +1,16 @@
 // Phase 7 smoke: referral attribution → first-approval bonus → cap.
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+try {
+  for (const line of readFileSync(join(root, ".env.local"), "utf8").split("\n")) {
+    const m = line.match(/^([A-Z_]+)=(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+} catch {}
+
 const API = "https://aiumavddbmoucvdgtows.supabase.co";
 const ANON = process.env.SUPABASE_ANON_KEY;
 const ADMIN = process.env.SUPABASE_SERVICE_ROLE_KEY;
