@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 // POST /api/standing — admin-only account standing changes.
 export async function POST(request: Request) {
@@ -28,10 +27,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "bad-request" }, { status: 400 });
   }
 
-  const admin = createAdminClient();
-  const { data, error } = await admin.rpc("set_account_standing", {
+  // User-session client: RPC derives the admin from auth.uid().
+  const { data, error } = await supabase.rpc("set_account_standing", {
     p_user_id: body.userId,
-    p_admin_id: user.id,
     p_standing: body.standing,
     p_reason: body.reason ?? "",
   });

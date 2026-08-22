@@ -39,19 +39,26 @@ export async function applyReferral(
     return { ok: false, reason: "self-invite" };
   }
 
-  // Attribute + record the invite (status: joined).
+  // Attribute + record the invite (status: joined). The unique index on
+  // (inviter_id, invitee_id) makes concurrent duplicate calls safe.
   const { error: updateError } = await admin
     .from("profiles")
     .update({ referred_by: inviter.id })
     .eq("id", userId);
   if (updateError) return { ok: false, reason: "db-error" };
 
-  await admin.from("invites").insert({
-    inviter_id: inviter.id,
-    invitee_id: userId,
-    code,
-    status: "joined",
-  });
+  const { error: insertError } = await admin
+    .from("invites")
+    .upsert(
+      {
+        inviter_id: inviter.id,
+        invitee_id: userId,
+        code,
+        status: "joined",
+      },
+      { onConflict: "inviter_id,invitee_id", ignoreDuplicates: true },
+    );
+  if (insertError) return { ok: false, reason: "db-error" };
 
   return { ok: true };
 }

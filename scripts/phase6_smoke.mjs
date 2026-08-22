@@ -95,7 +95,7 @@ check("duplicate pending blocked", dup.body?.reason === "pending-exists", JSON.s
 // ---- admin queue + approve → Tier 2 ----
 const queue = await fetch(`${BASE}/admin/verifications`, { headers: { Cookie: ca } });
 check("admin verification queue 200", queue.status === 200, queue.status);
-const nonAdminReview = await jf(`${API}/rest/v1/rpc/review_verification`, { method: "POST", headers: a1, body: JSON.stringify({ p_request_id: vId, p_admin_id: id1, p_action: "approve" }) });
+const nonAdminReview = await jf(`${API}/rest/v1/rpc/review_verification`, { method: "POST", headers: a1, body: JSON.stringify({ p_request_id: vId, p_action: "approve" }) });
 check("non-admin review blocked", nonAdminReview.body?.reason === "not-admin", JSON.stringify(nonAdminReview.body));
 const approve = await fetch(`${BASE}/api/verification`, { method: "POST", headers: { "Content-Type": "application/json", Cookie: ca }, body: JSON.stringify({ requestId: vId, action: "approve" }) });
 check("admin approves → tier 2", (await approve.json()).ok === true, "");

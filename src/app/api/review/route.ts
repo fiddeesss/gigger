@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 // POST /api/review — admin-only. The admin gate is enforced BOTH here (UI)
 // and inside the review_submission RPC (defense in depth).
@@ -30,10 +29,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: "bad-request" }, { status: 400 });
   }
 
-  const admin = createAdminClient();
-  const { data, error } = await admin.rpc("review_submission", {
+  // Call via the user's session client: the RPC derives the admin from
+  // auth.uid() and self-checks is_admin (service role would see NULL uid).
+  const { data, error } = await supabase.rpc("review_submission", {
     p_submission_id: body.submissionId,
-    p_reviewer_id: user.id,
     p_action: body.action,
     p_note: body.note ?? null,
     p_signal: body.signal ?? null,

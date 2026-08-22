@@ -19,6 +19,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Defense in depth: proxy.ts guards /admin at the edge; re-check here so a
+  // misconfigured matcher can never render admin data to a non-admin.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.is_admin) redirect("/quests");
+
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-20 border-b border-divider/70 bg-bg/90 backdrop-blur">
